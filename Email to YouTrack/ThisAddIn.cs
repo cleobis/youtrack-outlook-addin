@@ -55,7 +55,15 @@ namespace Email_to_YouTrack
             
             if (response.IsSuccessStatusCode)
             {
-                var projs = JsonConvert.DeserializeObject<List<JsonProject>>(response.Content.ReadAsStringAsync().Result);
+                List<JsonProject> projs;
+                try
+                {
+                    projs = JsonConvert.DeserializeObject<List<JsonProject>>(await response.Content.ReadAsStringAsync());
+                }
+                catch (Exception ex)
+                {
+                    throw new ApplicationException("Error parsing project\n" + await response.Content.ReadAsStringAsync());
+                }
                 if (projs.Count == 1)
                 {
                     return projs[0].id;
@@ -79,8 +87,7 @@ namespace Email_to_YouTrack
             json.project.id = projectId;
             json.summary = summary;
             json.description = description;
-            json.customFields.Add(new JsonCustomField("Priority", "SingleEnumIssueCustomField", "Critical"));
-            
+
             var client = await _connection.GetAuthenticatedHttpClient();
             var content = new StringContent(JsonConvert.SerializeObject(json), Encoding.UTF8, "application/json");
             var response = await client.PostAsync($"api/issues?fields=idReadable", content);
@@ -91,7 +98,8 @@ namespace Email_to_YouTrack
             var issueId = resp.idReadable;
 
             var uri = new Uri(new Uri(Properties.Settings.Default.baseUrl), "issue/" + issueId).ToString();
-            System.Diagnostics.Process.Start(uri);
+            //System.Diagnostics.Process.Start(uri);
+            System.Diagnostics.Process.Start("chrome.exe", uri);
 
             return issueId;
         }
@@ -111,6 +119,7 @@ namespace Email_to_YouTrack
         #endregion
     }
 
+    [JsonObject(ItemNullValueHandling = NullValueHandling.Ignore)]
     public class JsonProject
     {
         public string shortName;
@@ -147,6 +156,7 @@ namespace Email_to_YouTrack
                 },
             ],
         }*/
+    [JsonObject(ItemNullValueHandling = NullValueHandling.Ignore)]
     public class JsonIssue
     {
         public string idReadable;
@@ -155,7 +165,7 @@ namespace Email_to_YouTrack
         public string description;
         public List<JsonCustomField> customFields = new List<JsonCustomField>();
     }
-
+    [JsonObject(ItemNullValueHandling = NullValueHandling.Ignore)]
     public class JsonCustomField
     {
         public JsonCustomField(string name, string t, string value)
@@ -170,10 +180,11 @@ namespace Email_to_YouTrack
         public string t;
         public JsonCustomFieldValue value = new JsonCustomFieldValue();
     }
+    [JsonObject(ItemNullValueHandling = NullValueHandling.Ignore)]
     public class JsonCustomFieldValue
     {
         public string name;
-        [JsonProperty("$type", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty("$type")]
         public string t;
         public string login;
     }
