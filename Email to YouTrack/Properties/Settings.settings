@@ -1,0 +1,18 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Email_to_YouTrack.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="baseUrl" Type="System.String" Scope="User">
+      <Value Profile="(Default)">https://########.myjetbrains.com/youtrack/</Value>
+    </Setting>
+    <Setting Name="perm" Type="System.String" Scope="User">
+      <Value Profile="(Default)">perm:####</Value>
+    </Setting>
+    <Setting Name="project" Type="System.String" Scope="User">
+      <Value Profile="(Default)">####</Value>
+    </Setting>
+    <Setting Name="upgradeRequired" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
