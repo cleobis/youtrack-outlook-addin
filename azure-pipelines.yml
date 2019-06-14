@@ -23,7 +23,7 @@ steps:
 
 - task: DownloadSecureFile@1
   inputs:
-    secureFile: 'Email to YouTrack_TemporaryKey.pfx'
+    secureFile: 'Email_to_YouTrack_TemporaryKey.pfx'
 
 - task: CopyFiles@2
   inputs:
