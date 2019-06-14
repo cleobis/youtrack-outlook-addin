@@ -21,6 +21,15 @@ steps:
   inputs:
     restoreSolution: '$(solution)'
 
+- task: DownloadSecureFile@1
+  inputs:
+    secureFile: 'Email to YouTrack_TemporaryKey.pfx'
+
+- task: CopyFiles@2
+  inputs:
+    contents: '$(env:DOWNLOADSECUREFILE2_SECUREFILEPATH)' 
+    targetFolder: 'Email to YouTrack'
+
 - task: VSBuild@1
   inputs:
     solution: '$(solution)'
