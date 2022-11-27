@@ -251,7 +251,9 @@
       <DependentUpon>Ribbon1.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />
+    <None Include="Email to YouTrack_1_TemporaryKey.pfx" />
     <None Include="Email to YouTrack_TemporaryKey.pfx" />
+    <None Include="Email_to_YouTrack_TemporaryKey.pfx" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -290,7 +292,7 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>Email to YouTrack_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>Email_to_YouTrack_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestCertificateThumbprint>13E9AED9DA6BBADAE7E0C584BBACE9496583BE6A</ManifestCertificateThumbprint>
