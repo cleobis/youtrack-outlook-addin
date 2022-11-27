@@ -18,6 +18,9 @@ namespace Email_to_YouTrack
 {
     public partial class ThisAddIn
     {
+        private YouTrackSharp.Connection ConnectionCache = null;
+        private string ProjectIdCache = null;
+
         private void ThisAddIn_Startup(object sender, System.EventArgs e)
         {
             // Fix for failed SSL/TLS connection. See https://stackoverflow.com/a/71320604.
@@ -32,6 +35,8 @@ namespace Email_to_YouTrack
                 Properties.Settings.Default.upgradeRequired = false;
                 Properties.Settings.Default.Save();
             }
+
+            _ = RefreshCache(); // Runs asynchronously.
         }
 
 
@@ -41,10 +46,30 @@ namespace Email_to_YouTrack
             //    must run when Outlook shuts down, see https://go.microsoft.com/fwlink/?LinkId=506785
         }
 
+        public async Task RefreshCache ()
+        {
+            ConnectionCache = null;
+            ProjectIdCache = null;
+
+            ConnectionCache = new YouTrackSharp.BearerTokenConnection(Properties.Settings.Default.baseUrl, Properties.Settings.Default.perm);
+            var project = Properties.Settings.Default.project;
+            ProjectIdCache = await this.GetProjectId(ConnectionCache, project);
+        }
+
+        public async Task<YouTrackSharp.Connection> GetConnection()
+        {
+            if (ConnectionCache == null)
+            {
+                await RefreshCache();
+            }
+            return ConnectionCache;
+        }
+
+
         public async Task FromMail(Outlook.MailItem mail)
         {
             var project = Properties.Settings.Default.project;
-            var connection = new YouTrackSharp.BearerTokenConnection(Properties.Settings.Default.baseUrl, Properties.Settings.Default.perm);
+            var connection = await GetConnection();
             var issuesService = new YouTrackSharp.Issues.IssuesService(connection);
 
             var projID = await this.GetProjectId(connection, project);
@@ -53,10 +78,16 @@ namespace Email_to_YouTrack
 
         public async Task<string> GetProjectId(YouTrackSharp.Connection connection, string projectName)
         {
+            if (ProjectIdCache != null)
+            {
+                return ProjectIdCache;
+            }
+
             var client = await connection.GetAuthenticatedApiClient();
             try {
                 var project = await client.AdminProjectsGetAsync(projectName, "id,name,shortName");
-                return project.Id;
+                ProjectIdCache = project.Id;
+                return ProjectIdCache;
             }
             catch (Exception ex)
             {

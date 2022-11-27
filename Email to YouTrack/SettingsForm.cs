@@ -36,11 +36,19 @@ namespace Email_to_YouTrack
 
         private void BtnOkay_Click(object sender, EventArgs e)
         {
+            var changed = Properties.Settings.Default.baseUrl != this.baseUrl.Text
+                || Properties.Settings.Default.perm != this.perm.Text
+                || Properties.Settings.Default.project != this.project.Text;
             Properties.Settings.Default.baseUrl = this.baseUrl.Text;
             Properties.Settings.Default.perm = this.perm.Text;
             Properties.Settings.Default.project = this.project.Text;
             Properties.Settings.Default.Save();
             this.Close();
+
+            if (changed)
+            {
+                _ = Globals.ThisAddIn.RefreshCache(); // Runs asynchronously.
+            }
         }
 
         private void Label2_Click(object sender, EventArgs e)
