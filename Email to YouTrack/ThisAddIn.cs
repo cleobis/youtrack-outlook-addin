@@ -20,6 +20,10 @@ namespace Email_to_YouTrack
     {
         private void ThisAddIn_Startup(object sender, System.EventArgs e)
         {
+            // Fix for failed SSL/TLS connection. See https://stackoverflow.com/a/71320604.
+            AppContext.SetSwitch("Switch.System.ServiceModel.DisableUsingServicePointManagerSecurityProtocols", false);
+            AppContext.SetSwitch("Switch.System.Net.DontEnableSchUseStrongCrypto", false);
+
             // Update settings if app version changed.
             // https://stackoverflow.com/questions/534261/how-do-you-keep-user-config-settings-across-different-assembly-versions-in-net/534335#534335
             if (Properties.Settings.Default.upgradeRequired)
@@ -49,30 +53,14 @@ namespace Email_to_YouTrack
 
         public async Task<string> GetProjectId(YouTrackSharp.Connection connection, string projectName)
         {
-            var client = await connection.GetAuthenticatedHttpClient();
-            var query = "api/admin/projects?fields=id,name,shortName&query=" + WebUtility.UrlEncode(projectName);
-            var response = await client.GetAsync(query);
-            
-            if (response.IsSuccessStatusCode)
-            {
-                List<JsonProject> projs;
-                try
-                {
-                    projs = JsonConvert.DeserializeObject<List<JsonProject>>(await response.Content.ReadAsStringAsync());
-                }
-                catch (Exception ex)
-                {
-                    throw new ApplicationException("Error parsing project\n" + await response.Content.ReadAsStringAsync());
-                }
-                if (projs.Count == 1)
-                {
-                    return projs[0].id;
-                }
-                throw new ApplicationException("Unable to find unique project matching \"" + projectName + "\". Server returned " + projs.Count + " projects.");
+            var client = await connection.GetAuthenticatedApiClient();
+            try {
+                var project = await client.AdminProjectsGetAsync(projectName, "id,name,shortName");
+                return project.Id;
             }
-            else
+            catch (Exception ex)
             {
-                throw new ApplicationException("Query \"" + query + "\" failed with code " + response.StatusCode + " and message:\n" + response.Content.ReadAsStringAsync().Result);
+                throw new ApplicationException("Unable to find project matching \"" + projectName + "\".\n\nMessage:\n" + ex.Message);
             }
         }
 
@@ -88,7 +76,7 @@ namespace Email_to_YouTrack
             json.summary = summary;
             json.description = description;
 
-            var client = await _connection.GetAuthenticatedHttpClient();
+            var client = await _connection.GetAuthenticatedRawClient();
             var content = new StringContent(JsonConvert.SerializeObject(json), Encoding.UTF8, "application/json");
             var response = await client.PostAsync($"api/issues?fields=idReadable", content);
 

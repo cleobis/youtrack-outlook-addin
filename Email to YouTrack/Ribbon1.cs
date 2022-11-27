@@ -68,7 +68,7 @@ namespace Email_to_YouTrack
             }
             catch (Exception ex) //when (!Env.Debugging)
             {
-                MessageBox.Show("An error occured sending to YouTrack.\n" + ex.Message, "Email to YouTrack error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("An error occured sending to YouTrack.\n" + ex.ToString(), "Email to YouTrack error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
         }
